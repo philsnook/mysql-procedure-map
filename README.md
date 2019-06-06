@@ -37,11 +37,10 @@ Automatically generate a script file housing all of the procedures in a given My
 # Calling mapped procedures
 
 ```javascript
-    //Create the database connection as detailed above.
     //Require the generate script file.
     const Procedures = require("./output.js");
 
-    //Create a new instance of the pre-generated script
+    //Create a new instance of the pre-generated script - Create the database connection as detailed above and pass it into new Procedures(database).
     const procedures = new Procedures(database);
 
     //Call the on of the pre-generated procedures.
