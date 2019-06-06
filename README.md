@@ -10,7 +10,7 @@ Automatically generate a script file housing all of the procedures in a given My
 # Setup a connection to the MySQL Database
 ```javascript
 
-    const MySQLDatabase = require("./mysql-procedure-map");
+    const MySQLDatabase = require("mysql-procedure-map");
 
     const database = new MySQLDatabase({
         host    : 'localhost',
