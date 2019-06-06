@@ -1,6 +1,11 @@
 # mysql-procedure-map
 
-Maps a mysql database and generates a code file for all procedures in a given database
+Automatically generate a script file housing all of the procedures in a given MySQL Database.
+
+1. Connects to MySQL
+2. Discovers a list of procedures and their parameters
+3. Generates an output script detailing all the procedures in the database
+
 
 # Setup a connection to the MySQL Database
 ```javascript
