@@ -5,7 +5,7 @@ Maps a mysql database and generates a code file for all procedures in a given da
 # Setup a connection to the MySQL Database
 ```javascript
 
-    const MySQLDatabase = require("./mysql-procedure-bridge");
+    const MySQLDatabase = require("./mysql-procedure-map");
 
     const database = new MySQLDatabase({
         host    : 'localhost',
