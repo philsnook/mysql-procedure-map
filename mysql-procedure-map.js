@@ -1,7 +1,7 @@
 const mysql = require('mysql');
 const fs = require('fs');
- 
-class MySQLDatabase {
+
+class Database {
 
     constructor (connectionConfig){
         this.connectionConfig=connectionConfig;
@@ -244,4 +244,6 @@ module.exports = Procedures;
     }
 }
 
-module.exports = MySQLDatabase;
+module.exports = {
+    Database
+};
