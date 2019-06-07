@@ -10,9 +10,9 @@ Automatically generate a script file housing all of the procedures in a given My
 # Setup a connection to the MySQL Database
 ```javascript
 
-    const MySQLDatabase = require("mysql-procedure-map");
+    const MySQL = require("mysql-procedure-map");
 
-    const database = new MySQLDatabase({
+    const db = new MySQL.Database({
         host    : 'localhost',
         user    : 'user',
         password: 'password',
@@ -25,12 +25,12 @@ Automatically generate a script file housing all of the procedures in a given My
 ```javascript
     //Create the database connection as detailed above.
     //Call generateProcedureMapFile with the output filename and callback function.
-    database.generateProcedureMapFile("./output.js",function(err){
+    db.generateProcedureMapFile("./procedures.js",function(err){
         if(err){
             console.error(err);
             return;
         }
-        console.log('Output.js generated from the MySQL Database');
+        console.log('procedures.js generated from the MySQL Database');
     });
 ```
 
@@ -38,10 +38,10 @@ Automatically generate a script file housing all of the procedures in a given My
 
 ```javascript
     //Require the generate script file.
-    const Procedures = require("./output.js");
+    const Database = require("./procedures.js");
 
     //Create a new instance of the pre-generated script - Create the database connection as detailed above and pass it into new Procedures(database).
-    const procedures = new Procedures(database);
+    const procedures = new Database.Procedures(database);
 
     //Call the on of the pre-generated procedures.
     procedures.sp_select_users(1,2,'hello',(err, tables, parameters)=>{

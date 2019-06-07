@@ -116,7 +116,7 @@ class Procedures {
     }
     ${procedureOutput}
 };
-module.exports = Procedures;
+module.exports = {Procedures};
 `;
                     callBack(null, procedureOutput);
                     return;
