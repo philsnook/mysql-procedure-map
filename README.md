@@ -41,7 +41,7 @@ Automatically generate a script file housing all of the procedures in a given My
     const Database = require("./procedures.js");
 
     //Create a new instance of the pre-generated script - Create the database connection as detailed above and pass it into new Procedures(database).
-    const procedures = new Database.Procedures(database);
+    const procedures = new Database.Procedures(db);
 
     //Call the on of the pre-generated procedures.
     procedures.sp_select_users(1,2,'hello',(err, tables, parameters)=>{
