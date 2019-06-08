@@ -82,9 +82,6 @@ class Database {
               this.db.executeProcedure('${procedure.Name}', [${paramNames}], [${outputParams}], function(err, tables, parameters){
                   if(callBack){
                     callBack(err, tables, parameters);
-                    return;
-                  }else{
-                      console.warn('No callBack defined for the procedure call: ${procedure.Name}');
                   }
               });
           }`;
@@ -249,8 +246,10 @@ module.exports = Procedures;
              functionParams += `callBack: ${procedure.ShortName}CallBack`;
         
              var callBackSignature;
+             var callParams;
 
 if(interfaceParams.length>0){
+    callParams = 'err, tables, parameters';
     callBackSignature='callBack(err, tables, parameters);';
 
     typeDef += `export interface I${procedure.ShortName} {${interfaceParams}
@@ -258,7 +257,8 @@ if(interfaceParams.length>0){
 export type ${procedure.ShortName}CallBack = (error: Error, tables: any[], parameters: I${procedure.ShortName}) => void;
 `;
 }else{
-callBackSignature='callBack(err, tables);';
+    callParams = 'err, tables';
+    callBackSignature='callBack(err, tables);';
 typeDef += `
 export type ${procedure.ShortName}CallBack = (error: Error, tables: any[]) => void;
 `; 
@@ -267,12 +267,9 @@ export type ${procedure.ShortName}CallBack = (error: Error, tables: any[]) => vo
 
               var typescript = `
     public ${procedure.Name}(${functionParams}) {
-        this.database.executeProcedure("${procedure.Name}", [${paramNames}], [${outputParams}], (err, tables, parameters) => {
+        this.database.executeProcedure("${procedure.Name}", [${paramNames}], [${outputParams}], (${callParams}) => {
             if (callBack) {
                 ${callBackSignature}
-                return;
-            } else {
-                console.warn("No callBack defined for the procedure call: ${procedure.Name}");
             }
         });
     }
