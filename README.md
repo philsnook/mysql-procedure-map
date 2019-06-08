@@ -22,6 +22,7 @@ Automatically generate a script file housing all of the procedures in a given My
 
 # Generate a procedure map source file.
 
+## Javascript
 ```javascript
     //Create the database connection as detailed above.
     //Call generateProcedureMapFile with the output filename and callback function.
@@ -31,6 +32,18 @@ Automatically generate a script file housing all of the procedures in a given My
             return;
         }
         console.log('procedures.js generated from the MySQL Database');
+    });
+```
+## Typescript
+```javascript
+    //Create the database connection as detailed above.
+    //Call generateProcedureMapFile with the output filename and callback function.
+    db.generateTypescriptFile("./procedures.ts",function(err){
+        if(err){
+            console.error(err);
+            return;
+        }
+        console.log('procedures.ts generated from the MySQL Database');
     });
 ```
 
