@@ -25,7 +25,7 @@ Automatically generate a script file housing all of the procedures in a given My
 ```javascript
     //Create the database connection as detailed above.
     //Call generateProcedureMapFile with the output filename and callback function.
-    db.generateProcedureMapFile("./procedures.js",function(err){
+    db.generateJavascriptFile("./procedures.js",function(err){
         if(err){
             console.error(err);
             return;

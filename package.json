@@ -1,6 +1,6 @@
 {
   "name": "mysql-procedure-map",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Maps a mysql database and generates a code file for all procedures in a given database",
   "main": "mysql-procedure-map.js",
   "scripts": {

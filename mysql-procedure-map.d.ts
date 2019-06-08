@@ -1,6 +1,6 @@
 declare module 'mysql-procedure-map';
 
-export type IConnectionConfig =
+export type ConnectionConfig =
     {
         host: String,
         user: String,
@@ -9,22 +9,29 @@ export type IConnectionConfig =
         preQuery?: String
     };
 
-export type IProcedureMapCallBack = (error: Error, script: String) => void;
-export type IProcedureMapFileCallBack = (error: Error) => void;
-export type IExecuteQueryCallBack = (error: Error, tables: any[], fields:any[]) => void;
-export type IExecuteProcedureCallBack = (error: Error, tables: any[], parameters:any, fields:any[]) => void;
+export type GenerateScriptCallBack = (error: Error, javascript:string, typescript: string) => void;
+ 
+export type GenerateFileCallBack = (error: Error) => void;
+
+export type ExecuteQueryCallBack = (error: Error, tables: any[], fields:any[]) => void;
+
+export type ExecuteProcedureCallBack = (error: Error, tables: any[], parameters:any, fields:any[]) => void;
  
 export class Database {
-    constructor(connectionConfig: IConnectionConfig);
+    constructor(connectionConfig: ConnectionConfig);
 
-    connectionConfig: IConnectionConfig;
+    connectionConfig: ConnectionConfig;
 
-    generateProcedureMapFile(filePath: string, callBack: IProcedureMapCallBack): void;
+    generateJavascriptFile(filePath: string, callBack: GenerateFileCallBack): void;
 
-    generateProcedureMap(callBack: IProcedureMapCallBack): void;
+    generateTypescriptFile(filePath: string, callBack: GenerateFileCallBack): void;
 
-    executeQuery(query: string, parameters: string[], callBack: IExecuteQueryCallBack): void;
+    generateJavascript(callBack: GenerateScriptCallBack): void;
 
-    executeProcedure(procedureName: string, parameters: string[], outputs: string[], callBack:IExecuteProcedureCallBack): void;
+    generateTypescript(callBack: GenerateScriptCallBack): void;
+
+    executeQuery(query: string, parameters: string[], callBack: ExecuteQueryCallBack): void;
+
+    executeProcedure(procedureName: string, parameters: string[], outputs: string[], callBack:ExecuteProcedureCallBack): void;
 
 }

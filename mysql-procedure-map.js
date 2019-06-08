@@ -1,5 +1,6 @@
 const mysql = require('mysql');
 const fs = require('fs');
+const path = require('path');
 
 class Database {
 
@@ -13,27 +14,41 @@ class Database {
         this.connectionConfig.multipleStatements=true;
     }
 
-    generateProcedureMapFile(filePath, callBack){
-        this.generateProcedureMap(function(err, script){
+    generateJavascriptFile(filePath, callBack){
+        this.generateJavascript(function(err, javascript){
             if(err){
                 callBack(err);
                 return;
             }
-            fs.writeFile(filePath,script, function(err){
+
+            fs.writeFile(filePath, javascript, function(err){
                 callBack(err);
             });
         })
     }
 
-    generateProcedureMap(callBack){
+    generateTypescriptFile(filePath, callBack){
+        this.generateTypescript(function(err, typescript){
+            if(err){
+                callBack(err);
+                return;
+            }
+
+            fs.writeFile(filePath, typescript, function(err){
+                callBack(err);
+            });
+        })
+    }
+
+    generateJavascript(callBack){
         callBack = callBack || function(err){
             if(err){
                 console.error(err);
             }
         };
 
-        var procedureOutput = '';
-
+        var javascriptOutput = '';
+     
         var query = `
             SHOW PROCEDURE STATUS where db=DATABASE();
             SELECT * FROM information_schema.parameters  where ROUTINE_TYPE='PROCEDURE' and  SPECIFIC_SCHEMA=DATABASE() order by SPECIFIC_NAME, ORDINAL_POSITION;
@@ -63,7 +78,7 @@ class Database {
              if(functionParams.length>0){functionParams+=', ';};
              functionParams += 'callBack';
         
-              var output = `     ${procedure.Name}(${functionParams}){
+              var javascript = `     ${procedure.Name}(${functionParams}){
               this.db.executeProcedure('${procedure.Name}', [${paramNames}], [${outputParams}], function(err, tables, parameters){
                   if(callBack){
                     callBack(err, tables, parameters);
@@ -73,26 +88,24 @@ class Database {
                   }
               });
           }`;
-        
-        
-        
-          var comments = '';
-        
-        
-          for(var n in parameters){
-              var param = parameters[n];
-              if(param.PARAMETER_MODE=='IN'){
-                  if(comments.length>0){ comments = `${comments}\r\n`; }
-                  comments+=`    * @param {${param.DATA_TYPE}} ${param.PARAMETER_NAME} ${param.DTD_IDENTIFIER}`;
-              };
-          }
-        
-          output = `
+     
+     
+        var comments = '';
+   
+        for(var n in parameters){
+            var param = parameters[n];
+            if(param.PARAMETER_MODE=='IN'){
+                if(comments.length>0){ comments = `${comments}\r\n`; }
+                comments+=`    * @param {${param.DATA_TYPE}} ${param.PARAMETER_NAME} ${param.DTD_IDENTIFIER}`;
+            };
+        }
+    
+          javascript = `
           /** [${procedure.Name}] - auto generated procedure call\r\n${comments}
           * @param {Function} callBack(err, tables, parameters)
           */
-        ${output}`;
-              callBack(null, output);
+        ${javascript}`;
+              callBack(null, javascript);
         };
 
         this.executeQuery(query,[],function(err, results){
@@ -108,17 +121,19 @@ class Database {
             var popNextProcedure = function(){
                 var proc = procedures[0];
                 if(proc==null){
-                    procedureOutput = `
+                    javascriptOutput = `
 //auto generated procedure map
 class Procedures {
     constructor(database){
         this.db = database;
     }
-    ${procedureOutput}
+    ${javascriptOutput}
 };
-module.exports = {Procedures};
+module.exports = Procedures;
 `;
-                    callBack(null, procedureOutput);
+ 
+
+                    callBack(null, javascriptOutput);
                     return;
                 }
                 procedures.splice(0,1);
@@ -132,13 +147,13 @@ module.exports = {Procedures};
                     }
                 }
 
-                generateProcedure(proc, procedureParameters, function(err, output){
+                generateProcedure(proc, procedureParameters, function(err, javascript){
                     if(err){
                         callBack(err);
                         return;
                     }
                   
-                    procedureOutput+=output;
+                    javascriptOutput+=javascript;
                     popNextProcedure();
                 });
             };
@@ -146,7 +161,141 @@ module.exports = {Procedures};
             popNextProcedure();
         });
     }
+
+    generateTypescript(callBack){
+        callBack = callBack || function(err){
+            if(err){
+                console.error(err);
+            }
+        };
+
+        var typescriptOutput = '';
+     
+        var query = `
+            SHOW PROCEDURE STATUS where db=DATABASE();
+            SELECT * FROM information_schema.parameters  where ROUTINE_TYPE='PROCEDURE' and  SPECIFIC_SCHEMA=DATABASE() order by SPECIFIC_NAME, ORDINAL_POSITION;
+        `;
+
+        var generateProcedure = function(procedure, parameters, callBack){
+            var paramNames = '';
+            var typedParamNames = '';
+            var outputParams ='';
+        
+             for(var n in parameters){
+              var param = parameters[n];
+              if(param.PARAMETER_MODE=='IN'){
+                  if(paramNames.length>0){paramNames+=', ';};
+                  if(typedParamNames.length>0){typedParamNames+=', ';};
+
+                  var paramType = 'any';
+
+                  if(param.DATA_TYPE=='int' || param.DATA_TYPE=='float' || param.DATA_TYPE=='decimal'){
+                        paramType='number';
+                    }else if(param.DATA_TYPE=='varchar'){
+                        paramType='string';
+                  }else if(param.DATA_TYPE=='datetime'){
+                        paramType='Date';
+                  }else{
+                      console.log(param.DATA_TYPE);
+                  }
+
+                  paramNames+=param.PARAMETER_NAME;
+                  typedParamNames+=`${param.PARAMETER_NAME}: ${paramType}`;
+              };
+             }
+        
+             for(var n in parameters){
+              var param = parameters[n];
+              if(param.PARAMETER_MODE=='OUT'){
+                  if(outputParams.length>0){outputParams+=', ';};
+                  outputParams+=(`"@${param.PARAMETER_NAME}"`);
+              };
+             }
+        
+             var functionParams = typedParamNames;
+             if(functionParams.length>0){functionParams+=', ';};
+             functionParams += 'callBack: any';
+        
+              var typescript = `
+    public ${procedure.Name}(${functionParams}) {
+        this.database.executeProcedure("${procedure.Name}", [${paramNames}], [${outputParams}], (err, tables, parameters) => {
+            if (callBack) {
+                callBack(err, tables, parameters);
+                return;
+            } else {
+                console.warn("No callBack defined for the procedure call: ${procedure.Name}");
+            }
+        });
+    }
+`;
+     
+     
+      
+              callBack(null, typescript);
+        };
+
+        this.executeQuery(query,[],function(err, results){
+
+            if(err){
+                callBack(err);
+                return;
+            }
+
+            var procedures = results[0];
+            var parameters = results[1];
+
+            var popNextProcedure = function(){
+                var proc = procedures[0];
+                if(proc==null){
+                    typescriptOutput = `
+export type ExecuteProcedureCallBack = (error: Error, tables: any[], parameters: any, fields: any[]) => void;
+
+export interface IDatabase {
+    executeProcedure(procedureName: string, parameters: any[], outputs: string[], callBack: ExecuteProcedureCallBack): void;
+}
+
+export class Procedures {
+    public database: IDatabase;
+
+    constructor(database: IDatabase) {
+        this.database = database;
+    }
+${typescriptOutput}
+}
+
+export default Procedures;
+`;
  
+
+                    callBack(null, typescriptOutput);
+                    return;
+                }
+                procedures.splice(0,1);
+
+                var procedureParameters = [];
+
+                for(var n in parameters){
+                    var param = parameters[n];
+                    if(proc.Name == param.SPECIFIC_NAME){
+                        procedureParameters.push(param);
+                    }
+                }
+
+                generateProcedure(proc, procedureParameters, function(err, typescript){
+                    if(err){
+                        callBack(err);
+                        return;
+                    }
+                  
+                    typescriptOutput+=typescript;
+                    popNextProcedure();
+                });
+            };
+
+            popNextProcedure();
+        });
+    }
+
     executeQuery(query, parameters, callBack){
         try{
             var connection = mysql.createConnection(this.connectionConfig);
