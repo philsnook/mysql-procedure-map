@@ -180,7 +180,9 @@ module.exports = Procedures;
             if(DATA_TYPE=='int' || DATA_TYPE=='float' || DATA_TYPE=='decimal'){
                 paramType='number';
             }else if(DATA_TYPE=='bit'){
-                paramType='boolean';
+                paramType='number';
+            }else if(DATA_TYPE=='tinyint'){
+                paramType='number';
             }else if(DATA_TYPE=='varchar'){
                 paramType='string';
             }else if(DATA_TYPE=='datetime'){
